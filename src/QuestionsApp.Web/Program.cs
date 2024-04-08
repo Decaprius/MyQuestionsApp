@@ -36,6 +36,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// activate static files serving
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 // Queries
 app.MapGet("api/queries/questions", async (IMediator mediator)
     => await mediator.Send(new GetQuestionsRequest()));
