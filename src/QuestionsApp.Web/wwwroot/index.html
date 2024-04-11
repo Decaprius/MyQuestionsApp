@@ -9,9 +9,11 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@3.4.15/dist/vue.global.min.js"></script>
     <!-- Axios -->
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js" integrity="sha256-NDS2dZXGgHGCThQtB3zn4QXUCsQLFRZIltEeVAeNAhM=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js" integrity="sha256-+k7RplYeBZa1wx3zb0fBaSYRX6xF3PAvq1Cgp55YC04=" crossorigin="anonymous"></script>
     <title>Ask your questions</title>
 </head>
 <body>
+
 <nav class="navbar navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">Questions</a>
@@ -58,6 +60,8 @@
         </table>
     </div>
 </div>
+
+<!-- Vue -->
 <script>
     // vue app for the page
     var app = Vue.createApp({
@@ -79,7 +83,6 @@
                 axios
                     .post('api/commands/questions', null, { params: { content: this.newQuestion } })
                     .then(() => {
-                        this.getQuestions();
                         this.newQuestion = '';
                     })
                     .catch(function (error) { alert(error.response.data); });
@@ -88,7 +91,6 @@
                 // call the api to increment the votes of the question
                 axios
                     .post('api/commands/questions/' + question.id + '/vote')
-                    .then(() => this.getQuestions())
                     .catch(function (error) { alert(error.response.data); });
             },
             getQuestions: function () {
@@ -101,7 +103,14 @@
             this.getQuestions();
         }
     });
-    app.mount("#questionView");
+
+    const vm = app.mount("#questionView");
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/hub")
+        .build();
+    connection.start().catch(err => console.error(err.toString()));
+    connection.on("refresh", () => { console.log("Refresh"); vm.getQuestions(); });
 </script>
 <!-- Optional JavaScript -->
 <!-- Bootstrap JS -->
